@@ -9,9 +9,10 @@ services:
       dockerfile: container/Dockerfile
     image: searxng-yonder:dev
     restart: unless-stopped
-    ports:
-      # Host port is configurable; the container always listens on 8080.
-      - "${SEARXNG_PORT:-8080}:8080"
+    # Share the VPN container's network namespace. binhex-delugevpn owns the
+    # published port (already configured for 8080); this service must not
+    # declare its own ports in container network mode.
+    network_mode: "container:binhex-delugevpn"
     environment:
       INSTANCE_NAME: "${INSTANCE_NAME:-SearXNG}"
       SEARXNG_BASE_URL: "${SEARXNG_BASE_URL:-http://localhost:8080/}"
