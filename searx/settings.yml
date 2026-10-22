@@ -522,6 +522,15 @@ engines:
     display_type: ["infobox"]
     categories: [general]
 
+  - name: wikipedia-full
+    engine: wikipedia_full
+    shortcut: wpf
+    display_type: ["infobox"]
+    # Deliberately not in the "general" category: normal searches should not
+    # pay for the full extract. Yonder requests this engine explicitly from its
+    # deferred sidebar lookup.
+    categories: [wikipedia-full]
+
   - name: bilibili
     engine: bilibili
     shortcut: bil

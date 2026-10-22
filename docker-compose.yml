@@ -1,0 +1,27 @@
+name: searxng
+
+services:
+  searxng:
+    container_name: searxng
+    build:
+      # Build directly from the fork's dev branch on GitHub.
+      context: "https://github.com/eipox99/searxng.git#dev"
+      dockerfile: container/Dockerfile
+    image: searxng-yonder:dev
+    restart: unless-stopped
+    ports:
+      # Host port is configurable; the container always listens on 8080.
+      - "${SEARXNG_PORT:-8080}:8080"
+    environment:
+      INSTANCE_NAME: "${INSTANCE_NAME:-SearXNG}"
+      SEARXNG_BASE_URL: "${SEARXNG_BASE_URL:-http://localhost:8080/}"
+      # Required. This must match Yonder's SEARXNG_SECRET.
+      SEARXNG_SECRET: "${SEARXNG_SECRET:?Set SEARXNG_SECRET in .env}"
+    volumes:
+      # Unraid appdata path. Contains settings.yml and limiter.toml.
+      - "${SEARXNG_CONFIG:-/mnt/user/appdata/searxng}:/etc/searxng"
+      # Persist SearXNG's cache separately from config.
+      - "searxng-cache:/var/cache/searxng"
+
+volumes:
+  searxng-cache:
