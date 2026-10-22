@@ -36,7 +36,7 @@ log = logger.getChild("result_types")
 
 WHITESPACE_REGEX = re.compile('( |\t|\n)+', re.M | re.U)
 MAXIMUM_TITLE_LENGTH_CHARS = 200
-MAXIMUM_CONTENT_LENGTH_CHARS = 1200
+MAXIMUM_CONTENT_LENGTH_CHARS = 12000
 UNSET = object()
 
 
