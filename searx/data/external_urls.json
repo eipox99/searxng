@@ -152,5 +152,26 @@
         "urls": {
             "default": "https://www.openstreetmap.org/?lat=${latitude}&lon=${longitude}&zoom=${zoom}&layers=M"
         }
+    },
+    "twitch_username": {
+        "category_name": "Twitch",
+        "url_name": "Twitch channel",
+        "urls": {
+            "default": "https://www.twitch.tv/$1"
+        }
+    },
+    "kick_username": {
+        "category_name": "Kick",
+        "url_name": "Kick channel",
+        "urls": {
+            "default": "https://kick.com/$1"
+        }
+    },
+    "tiktok_username": {
+        "category_name": "TikTok",
+        "url_name": "TikTok profile",
+        "urls": {
+            "default": "https://www.tiktok.com/@$1"
+        }
     }
 }

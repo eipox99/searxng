@@ -68,7 +68,7 @@ class WDAttribute:
         return "(group_concat(distinct ?{name};separator=', ') as ?{name}s)".replace("{name}", self.name)
 
     def get_label(self, language: str):
-        return get_label_for_entity(self.name, language)
+        return _WIKIDATA_PROPERTIES_OVERRIDE.get(self.name) or get_label_for_entity(self.name, language)
 
     def get_where(self):
         return "OPTIONAL { ?item wdt:{name} ?{name} . }".replace("{name}", self.name)
@@ -358,6 +358,9 @@ _WIKIDATA_PROPERTIES_OVERRIDE: WikiDataPropertiesType = {
     "P2002": "Twitter",
     "P2013": "Facebook",
     "P2003": "Instagram",
+    "P5797": "Twitch",
+    "P13863": "Kick",
+    "P7085": "TikTok",
     "P4033": "Mastodon",
     "P11947": "Lemmy",
     "P12622": "PeerTube",
@@ -528,6 +531,9 @@ def get_attributes(language: str):
     add_url("P2002", url_id="twitter_profile")
     add_url("P2013", url_id="facebook_profile")
     add_url("P2003", url_id="instagram_profile")
+    add_url("P5797", url_id="twitch_username")
+    add_url("P13863", url_id="kick_username")
+    add_url("P7085", url_id="tiktok_username")
 
     # Fediverse
     add_url("P4033", url_path_prefix="/@")  # Mastodon user
