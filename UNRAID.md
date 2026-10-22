@@ -21,6 +21,14 @@ The VPN container must be running before this stack starts. If the VPN
 container is recreated or restarted, restart the SearXNG stack too so it joins
 the new network namespace.
 
+### VPN kill switch
+
+`binhex-delugevpn` has a kill switch: if the VPN tunnel goes down, outbound
+access is cut. Because SearXNG shares that network namespace, its provider
+requests have no clearnet fallback. This is a network-level privacy control; it
+does not replace Yonder's one-upstream model, authentication, sanitization, or
+TLS rules.
+
 ## Compose Manager setup
 
 1. In Unraid, open the Compose Manager stack for `custom-searxng`.
