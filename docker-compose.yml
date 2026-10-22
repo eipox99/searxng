@@ -9,13 +9,13 @@ services:
       dockerfile: container/Dockerfile
     image: searxng-yonder:dev
     restart: unless-stopped
-    # Share the VPN container's network namespace. binhex-delugevpn owns the
-    # published port (already configured for 8080); this service must not
-    # declare its own ports in container network mode.
+    # Share the VPN container's network namespace. binhex-delugevpn publishes
+    # host port 8888 and forwards it to SearXNG's internal 8080. This service
+    # must not declare its own ports in container network mode.
     network_mode: "container:binhex-delugevpn"
     environment:
       INSTANCE_NAME: "${INSTANCE_NAME:-SearXNG}"
-      SEARXNG_BASE_URL: "${SEARXNG_BASE_URL:-http://localhost:8080/}"
+      SEARXNG_BASE_URL: "${SEARXNG_BASE_URL:-http://localhost:8888/}"
       # Required. This must match Yonder's SEARXNG_SECRET.
       SEARXNG_SECRET: "${SEARXNG_SECRET:?Set SEARXNG_SECRET in .env}"
     volumes:
