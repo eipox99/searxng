@@ -10,6 +10,7 @@ category searches do not run it. Yonder requests it explicitly from its deferred
 sidebar lookup.
 """
 
+import re
 import urllib.parse
 
 from searx import network as _network
@@ -59,8 +60,9 @@ def request(query, params):
             "action": "query",
             "format": "json",
             "formatversion": "2",
-            "prop": "extracts|pageimages|info",
+            "prop": "extracts|pageimages|info|extlinks",
             "inprop": "url",
+            "ellimit": "50",
             "exintro": "1",
             "explaintext": "1",
             "redirects": "1",
@@ -71,6 +73,45 @@ def request(query, params):
     params["raise_for_httperror"] = False
     params["soft_max_redirects"] = 2
     return params
+
+
+PROFILE_LINK_DOMAINS = {
+    "x.com": ("X", re.compile(r"^/[A-Za-z0-9_]{1,15}/?$"), re.compile(r"/(?:i|intent|share|status|home|search|hashtag|login|signup|settings)\b", re.I)),
+    "twitter.com": ("X", re.compile(r"^/[A-Za-z0-9_]{1,15}/?$"), re.compile(r"/(?:i|intent|share|status|home|search|hashtag|login|signup|settings)\b", re.I)),
+    "instagram.com": ("Instagram", re.compile(r"^/[A-Za-z0-9._]{1,30}/?$"), re.compile(r"/(?:p|reel|reels|explore|accounts|stories|direct)\b", re.I)),
+    "youtube.com": ("YouTube", re.compile(r"^/(?:@[A-Za-z0-9_.-]{2,}|channel/UC[A-Za-z0-9_-]{10,}|user/[A-Za-z0-9_.-]{2,}|c/[A-Za-z0-9_.-]{2,})/?$"), re.compile(r"/(?:watch|playlist|results|shorts|feed|embed)\b", re.I)),
+    "tiktok.com": ("TikTok", re.compile(r"^/@[A-Za-z0-9_.-]{1,30}/?$"), re.compile(r"/(?:video|photo|music|tag|discover|foryou)\b", re.I)),
+    "facebook.com": ("Facebook", re.compile(r"^/[A-Za-z0-9.]{3,}/?$"), re.compile(r"/(?:posts|photos|photo|watch|groups|events|reel|reels|stories|marketplace|login|help)\b", re.I)),
+    "twitch.tv": ("Twitch", re.compile(r"^/[A-Za-z0-9_]{1,25}/?$"), re.compile(r"/(?:videos|directory|p|clip|clips|s|settings|search|downloads)\b", re.I)),
+    "kick.com": ("Kick", re.compile(r"^/[A-Za-z0-9_]{1,25}/?$"), re.compile(r"/(?:video|videos|category|categories|clips|search|browse|following)\b", re.I)),
+}
+
+
+def profile_links(extlinks):
+    seen = set()
+    links = []
+    for item in extlinks or []:
+        raw = item.get("url") if isinstance(item, dict) else item
+        if not isinstance(raw, str):
+            continue
+        parsed = urllib.parse.urlparse(raw)
+        host = parsed.hostname.lower().removeprefix("www.") if parsed.hostname else ""
+        if parsed.scheme not in ("http", "https") or not host:
+            continue
+        pattern = PROFILE_LINK_DOMAINS.get(host)
+        if pattern is None:
+            continue
+        title, path_pattern, reject = pattern
+        if reject.search(parsed.path) or not path_pattern.match(parsed.path):
+            continue
+        url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+        if url in seen:
+            continue
+        seen.add(url)
+        links.append({"title": title, "url": url})
+        if len(links) >= 12:
+            break
+    return links
 
 
 def response(resp):
@@ -100,13 +141,16 @@ def response(resp):
     title = utils.html_to_text(page.get("title") or "")
     thumbnail = (page.get("thumbnail") or {}).get("source")
 
+    urls = [{"title": "Wikipedia", "url": fullurl}]
+    urls.extend(profile_links(page.get("extlinks")))
+
     return [
         {
             "infobox": title,
             "id": fullurl,
             "content": extract,
             "img_src": thumbnail,
-            "urls": [{"title": "Wikipedia", "url": fullurl}],
+            "urls": urls,
         }
     ]
 
